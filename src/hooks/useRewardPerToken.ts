@@ -6,8 +6,8 @@ import { getContract } from "../utils/pool";
 
 export function useRewardPerToken(poolAddress: string) {
     const { account, ethereum } = useWallet()
-    const [ rewardPerToken, updateRewardPerToken ] = useState(new BigNumber(0))
-    const [ lastUpdateTime, updateLastupdate ] = useState(new BigNumber(0))
+    const [ rewardPerToken, updateRewardPerToken ] = useState("0")
+    const [ lastUpdateTime, updateLastupdate ] = useState("0")
 
 
     const contract = useMemo(() => {
@@ -18,13 +18,16 @@ export function useRewardPerToken(poolAddress: string) {
         const _rewardPerToken = await contract.methods.rewardPerToken().call();
         const _lastUpdateTime = await contract.methods.lastUpdateTime().call();
         updateRewardPerToken(_rewardPerToken)
-        updateLastupdate(_lastUpdateTime)
+        updateLastupdate(_lastUpdateTime.toString())
       }, [contract])
-
-      const diffSinceLastUpdate = new Date().getTime() - lastUpdateTime.mul(1000).toNumber()
+      const _lU = Number(lastUpdateTime) * 1000
+      const diffSinceLastUpdate = new Date().getTime() - (_lU)
       const oneYearInMs = 1000 * 60 * 60 * 24 * 365
       const howManyPartInYear = oneYearInMs / diffSinceLastUpdate
-      const apy = (rewardPerToken.div("1000000000000000000").toNumber()) * (howManyPartInYear)
+      console.log('lastUpdateTime', _lU)
+      console.log('howManyPartInYear', howManyPartInYear)
+    //   const apy = 0
+      const apy = lastUpdateTime === '0' ? 0 :(Number(rewardPerToken) / 1e18) * (howManyPartInYear)
 
       useEffect(() => {
         if (account && contract) {
